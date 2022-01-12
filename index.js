@@ -97,7 +97,7 @@ module.exports = function (app) {
 
 	  // Read ina219 sensor data
     async function readina219() {
-		  const sensor = await ina219(options.i2c_address, options.i2c_bus);
+		  const sensor = await ina219(Number(options.i2c_address), options.i2c_bus);
       await sensor.calibrate32V2A();
 
 		  const busvoltage = await sensor.getBusVoltage_V();
