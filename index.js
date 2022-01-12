@@ -20,13 +20,13 @@ module.exports = function (app) {
       rate: {
         title: "Sample Rate (in seconds)",
         type: 'number',
-        default: 1
+        default: 5
       },
       pathvoltage: {
         type: 'string',
         title: 'SignalK Path of voltage',
         description: 'This is used to build the path in Signal K for the voltage sensor data',
-        default: 'electrical.batteries.battery01.voltage' //Units: V (Volt)
+        default: '.electrical.batteries.battery01.voltage' //Units: V (Volt)
 		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
       },
       reportcurrent: {
@@ -38,7 +38,7 @@ module.exports = function (app) {
         type: 'string',
         title: 'SignalK Path of current',
         description: 'This is used to build the path in Signal K for the current sensor data',
-        default: 'electrical.batteries.battery01.current' //Units: A (Ampere)
+        default: '.electrical.batteries.battery01.current' //Units: A (Ampere)
 		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
       },
       i2c_bus: {
