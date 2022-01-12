@@ -90,14 +90,14 @@ module.exports = function (app) {
 
     // The ina219 constructor options are optional.
     //
-    const bmpoptions = {
-        bus : options.i2c_bus || 1, // defaults to 1
-      	address : Number(options.i2c_address || '0x40'), // defaults to 0x40
-	  };
+    //const bmpoptions = {
+      //  bus : options.i2c_bus || 1, // defaults to 1
+      	//address : Number(options.i2c_address || '0x40'), // defaults to 0x40
+	  //};
 
 	  // Read ina219 sensor data
     async function readina219() {
-		  const sensor = await ina219(bmpoptions);
+		  const sensor = await ina219(Number(options.i2c_address || '0x40'),options.i2c_bus || 1);
       await sensor.calibrate32V2A();
 
 		  const busvoltage = await sensor.getBusVoltage_V();
