@@ -26,7 +26,7 @@ module.exports = function (app) {
         type: 'string',
         title: 'SignalK Path of voltage',
         description: 'This is used to build the path in Signal K for the voltage sensor data',
-        default: '.electrical.batteries.battery01.voltage' //Units: V (Volt)
+        default: 'electrical.batteries.battery01.voltage' //Units: V (Volt)
 		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
       },
       reportcurrent: {
@@ -38,7 +38,7 @@ module.exports = function (app) {
         type: 'string',
         title: 'SignalK Path of current',
         description: 'This is used to build the path in Signal K for the current sensor data',
-        default: '.electrical.batteries.battery01.current' //Units: A (Ampere)
+        default: 'electrical.batteries.battery01.current' //Units: A (Ampere)
 		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
       },
       i2c_bus: {
@@ -91,13 +91,13 @@ module.exports = function (app) {
     // The ina219 constructor options are optional.
     
     //const inaoptions = {
-    //   bus : options.i2c_bus || 1, // defaults to 1
-      //	address : options.i2c_address || '0x40', // defaults to 0x40
-	//  };
+    //  bus : options.i2c_bus || 1, // defaults to 1
+    //	address : options.i2c_address || '0x40', // defaults to 0x40
+	  //  };
 
 	  // Read ina219 sensor data
     async function readina219() {
-		  const sensor = await ina219(0x40, 1);
+		  const sensor = await ina219(options.i2c_address, options.i2c_bus);
       await sensor.calibrate32V2A();
 
 		  const busvoltage = await sensor.getBusVoltage_V();
@@ -119,7 +119,7 @@ module.exports = function (app) {
         //close sensor
         //await sensor.close()
 
-        .catch((err) => {
+      .catch((err) => {
       console.log(`ina219 read error: ${err}`);
       });
     }
