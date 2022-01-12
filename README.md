@@ -13,7 +13,7 @@ You will need a raspberry pi with SignalK installed along with a ina219 sensor.
 Personally I am using the sensor found at the following link on Amazon. However there are many manufacturers to pick from.
 HiLetgo ina219 current shunt and power monitor sensor for Raspberry Pi with I2C build by Texas Instruments.
 
-![ina219](../main/Pictures/adafruit_ina219.png)
+![ina219](../master/Pictures/adafruit_ina219.png)
 
 Learn more: https://www.amazon.com/HiLetgo-INA219-Bi-directional-Current-Breakout/dp/B01ICN5OAM/
 

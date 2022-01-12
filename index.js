@@ -117,7 +117,7 @@ module.exports = function (app) {
         app.handleMessage(plugin.id, delta)		
 	
         //close sensor
-        await sensor.close()
+        //await sensor.close()
 
         .catch((err) => {
       console.log(`ina219 read error: ${err}`);
