@@ -20,15 +20,26 @@ module.exports = function (app) {
       rate: {
         title: "Sample Rate (in seconds)",
         type: 'number',
-        default: 60
+        default: 1
       },
-      path: {
+      pathvoltage: {
         type: 'string',
-        title: 'SignalK Path',
-        description: 'This is used to build the path in Signal K. It will be appended to \'environment\'',
-        default: 'inside.engineroom' 
+        title: 'SignalK Path of voltage',
+        description: 'This is used to build the path in Signal K for the voltage sensor data',
+        default: 'electrical.batteries.battery01.voltage' //Units: V (Volt)
 		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
-		    //environment/inside/temperature [Units: K (Kelvin)]  and environment/inside/pressure [Units: Pa (Pascal)]
+      },
+      reportcurrent: {
+        type: 'boolean',
+        title: 'Also send the current data to Signalk',
+        default: true
+      },
+      pathcurrent: {
+        type: 'string',
+        title: 'SignalK Path of current',
+        description: 'This is used to build the path in Signal K for the current sensor data',
+        default: 'electrical.batteries.battery01.current' //Units: A (Ampere)
+		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
       },
       i2c_bus: {
         type: 'integer',
@@ -45,17 +56,23 @@ module.exports = function (app) {
 
   plugin.start = function (options) {
 
-    function createDeltaMessage (temperature, pressure) {
+    function createDeltaMessage (voltage, current) {
       var values = [
         {
-          'path': 'environment.' + options.path + '.temperature',
-          'value': temperature
-        }, {
-          'path': 'environment.' + options.path + '.pressure',
-          'value': pressure
+          'path': options.pathvoltage,
+          'value': voltage
         }
       ];
-     
+    
+    // Report current if desired
+    if (options.reportcurrent == true) {
+      values.push(
+        {
+          'path': options.pathcurrent,
+          'value': current
+        });
+      }
+      
 
       return {
         'context': 'vessels.' + app.selfId,
@@ -80,19 +97,21 @@ module.exports = function (app) {
 
 	  // Read ina219 sensor data
     async function readina219() {
-		  const sensor = await ina219(bmpoptions)
-		  const data = await sensor.read()
-		    // temperature_C, pressure_Pa are returned by default for bmp180.
-        // The standard path for Signal K is available here:
-        // https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
-		    // Therefore: environment/inside/temperature [Units: K (Kelvin)] and environment/inside/pressure [Units: Pa (Pascal)]
-        temperature = data.temperature + 273.15;
-        pressure = data.pressure;
+		  const sensor = await ina219(bmpoptions);
+      await sensor.calibrate32V2A();
+
+		  const busvoltage = await sensor.getBusVoltage_V();
+      console.log("Bus voltage (V): " + busvoltage);
+      const shuntvoltage = await sensor.getShuntVoltage_mV();
+      console.log("Shunt voltage (mV): " + shuntvoltage);
+      const shuntcurrent = await sensor.getCurrent_mA();
+      console.log("Current (mA): " + shuntcurrent);
+
         //console.log(`data = ${JSON.stringify(data, null, 2)}`);
 		    //console.log(data)
         
         // create message
-        var delta = createDeltaMessage(temperature, pressure)
+        var delta = createDeltaMessage(shuntvoltage, shuntcurrent)
         
         // send data
         app.handleMessage(plugin.id, delta)		
@@ -101,7 +120,7 @@ module.exports = function (app) {
         await sensor.close()
 
         .catch((err) => {
-      console.log(`bmp180 read error: ${err}`);
+      console.log(`ina219 read error: ${err}`);
       });
     }
 
