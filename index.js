@@ -4,7 +4,7 @@
  * Add the MIT license
  */
 
-const ina219A = require('ina219-async');
+const ina219 = require('ina219-async');
 
 module.exports = function (app) {
   let timer = null
