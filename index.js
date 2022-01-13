@@ -117,7 +117,7 @@ module.exports = function (app) {
 	console.log("Load voltage (V): " + loadvoltageV);
 	
         // create message
-        var delta = createDeltaMessage(loadvoltageA, shuntcurrentA)
+        var delta = createDeltaMessage(loadvoltageV, shuntcurrentA)
         
         // send data
         app.handleMessage(plugin.id, delta)		
