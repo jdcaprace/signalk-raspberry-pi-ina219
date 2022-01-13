@@ -4,7 +4,7 @@
   "description": "SignalK node server plugin that reads data from ina219 current/voltage/power sensors on Raspberry-Pi",
   "license": "MIT",
   "homepage": "https://github.com/jdcaprace/signalk-raspberry-pi-ina219#readme",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "main": "index.js",
   "keywords": [
     "signalk-node-server-plugin"
