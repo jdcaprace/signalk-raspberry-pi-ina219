@@ -105,17 +105,19 @@ module.exports = function (app) {
       const shuntvoltage = await sensor.getShuntVoltage_mV();
       console.log("Shunt voltage (mV): " + shuntvoltage);
       const shuntcurrent = await sensor.getCurrent_mA();
-      console.log("Current (mA): " + shuntcurrent);
+      console.log("Shunt Current (mA): " + shuntcurrent);
 
         //console.log(`data = ${JSON.stringify(data, null, 2)}`);
 		    //console.log(data)
         
 	// Change units to be compatible with SignalK
-	shuntcurrent = shuntcurrent / 1000;
-	voltage = busvoltage + (shuntvoltage / 1000);
+	shuntcurrentA = shuntcurrent / 1000;
+	console.log("Load Current (A): " + shuntcurrentA);
+	loadvoltageV = busvoltage + (shuntvoltage / 1000);
+	console.log("Load voltage (V): " + loadvoltageV);
 	
         // create message
-        var delta = createDeltaMessage(voltage, shuntcurrent)
+        var delta = createDeltaMessage(loadvoltageA, shuntcurrentA)
         
         // send data
         app.handleMessage(plugin.id, delta)		
