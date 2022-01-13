@@ -110,8 +110,12 @@ module.exports = function (app) {
         //console.log(`data = ${JSON.stringify(data, null, 2)}`);
 		    //console.log(data)
         
+	// Change units to be compatible with SignalK
+	shuntcurrent = shuntcurrent / 1000;
+	voltage = busvoltage + (shuntvoltage / 1000);
+	
         // create message
-        var delta = createDeltaMessage(shuntvoltage, shuntcurrent)
+        var delta = createDeltaMessage(voltage, shuntcurrent)
         
         // send data
         app.handleMessage(plugin.id, delta)		
