@@ -6,143 +6,136 @@
 
 const ina219 = require('ina219-async');
 
-module.exports = function (app) {
-  let timer = null
-  let plugin = {}
+module.exports = function(app) {
+    let timer = null
+    let plugin = {}
 
-  plugin.id = 'signalk-raspberry-pi-ina219'
-  plugin.name = 'Raspberry-Pi ina219'
-  plugin.description = 'ina219 i2c current/voltage/power sensor on Raspberry-Pi'
+    plugin.id = 'signalk-raspberry-pi-ina219'
+    plugin.name = 'Raspberry-Pi ina219'
+    plugin.description = 'ina219 i2c current/voltage/power sensor on Raspberry-Pi'
 
-  plugin.schema = {
-    type: 'object',
-    properties: {
-      rate: {
-        title: "Sample Rate (in seconds)",
-        type: 'number',
-        default: 5
-      },
-      pathvoltage: {
-        type: 'string',
-        title: 'SignalK Path of voltage',
-        description: 'This is used to build the path in Signal K for the voltage sensor data',
-        default: 'electrical.batteries.battery01.voltage' //Units: V (Volt)
-		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
-      },
-      reportcurrent: {
-        type: 'boolean',
-        title: 'Also send the current data to Signalk',
-        default: true
-      },
-      pathcurrent: {
-        type: 'string',
-        title: 'SignalK Path of current',
-        description: 'This is used to build the path in Signal K for the current sensor data',
-        default: 'electrical.batteries.battery01.current' //Units: A (Ampere)
-		    //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
-      },
-      i2c_bus: {
-        type: 'integer',
-        title: 'I2C bus number',
-        default: 1,
-      },
-      i2c_address: {
-        type: 'string',
-        title: 'I2C address',
-        default: '0x40',
-      },
-    }
-  }
-
-  plugin.start = function (options) {
-
-    function createDeltaMessage (voltage, current) {
-      var values = [
-        {
-          'path': options.pathvoltage,
-          'value': voltage
-        }
-      ];
-    
-    // Report current if desired
-    if (options.reportcurrent == true) {
-      values.push(
-        {
-          'path': options.pathcurrent,
-          'value': current
-        });
-      }
-      
-
-      return {
-        'context': 'vessels.' + app.selfId,
-        'updates': [
-          {
-            'source': {
-              'label': plugin.id
+    plugin.schema = {
+        type: 'object',
+        properties: {
+            rate: {
+                title: "Sample Rate (in seconds)",
+                type: 'number',
+                default: 5
             },
-            'timestamp': (new Date()).toISOString(),
-            'values': values
-          }
-        ]
-      }
+            pathvoltage: {
+                type: 'string',
+                title: 'SignalK Path of voltage',
+                description: 'This is used to build the path in Signal K for the voltage sensor data',
+                default: 'electrical.batteries.battery01.voltage' //Units: V (Volt)
+                //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
+            },
+            reportcurrent: {
+                type: 'boolean',
+                title: 'Also send the current data to Signalk',
+                default: true
+            },
+            pathcurrent: {
+                type: 'string',
+                title: 'SignalK Path of current',
+                description: 'This is used to build the path in Signal K for the current sensor data',
+                default: 'electrical.batteries.battery01.current' //Units: A (Ampere)
+                //https://signalk.org/specification/1.5.0/doc/vesselsBranch.html
+            },
+            i2c_bus: {
+                type: 'integer',
+                title: 'I2C bus number',
+                default: 1,
+            },
+            i2c_address: {
+                type: 'string',
+                title: 'I2C address',
+                default: '0x40',
+            },
+        }
     }
 
-    // The ina219 constructor options are optional.
-    
-    //const inaoptions = {
-    //  bus : options.i2c_bus || 1, // defaults to 1
-    //	address : options.i2c_address || '0x40', // defaults to 0x40
-	  //  };
+    plugin.start = function(options) {
 
-	  // Read ina219 sensor data
-    async function readina219() {
-		  const sensor = await ina219(Number(options.i2c_address), options.i2c_bus);
-      await sensor.calibrate32V2A();
+        function createDeltaMessage(voltage, current) {
+            var values = [{
+                'path': options.pathvoltage,
+                'value': voltage
+            }];
 
-		  const busvoltage = await sensor.getBusVoltage_V();
-      console.log("Bus voltage (V): " + busvoltage);
-      const shuntvoltage = await sensor.getShuntVoltage_mV();
-      console.log("Shunt voltage (mV): " + shuntvoltage);
-      const shuntcurrent = await sensor.getCurrent_mA();
-      console.log("Shunt Current (mA): " + shuntcurrent);
+            // Report current if desired
+            if (options.reportcurrent == true) {
+                values.push({
+                    'path': options.pathcurrent,
+                    'value': current
+                });
+            }
 
-        //console.log(`data = ${JSON.stringify(data, null, 2)}`);
-		    //console.log(data)
-        
-	// Change units to be compatible with SignalK
-	shuntcurrentA = shuntcurrent / 1000;
-	console.log("Load Current (A): " + shuntcurrentA);
-	loadvoltageV = busvoltage + (shuntvoltage / 1000);
-	console.log("Load voltage (V): " + loadvoltageV);
-	
-        // create message
-        var delta = createDeltaMessage(loadvoltageV, shuntcurrentA)
-        
-        // send data
-        app.handleMessage(plugin.id, delta)		
-	
-        //close sensor
-        //await sensor.close()
 
-      .catch((err) => {
-      console.log(`ina219 read error: ${err}`);
-      });
+            return {
+                'context': 'vessels.' + app.selfId,
+                'updates': [{
+                    'source': {
+                        'label': plugin.id
+                    },
+                    'timestamp': (new Date()).toISOString(),
+                    'values': values
+                }]
+            }
+        }
+
+        // The ina219 constructor options are optional.
+
+        //const inaoptions = {
+        //  bus : options.i2c_bus || 1, // defaults to 1
+        //	address : options.i2c_address || '0x40', // defaults to 0x40
+        //  };
+
+        // Read ina219 sensor data
+        const sensor = await ina219(Number(options.i2c_address), options.i2c_bus);
+        await sensor.calibrate32V2A();
+
+        async function readina219() {
+            try {
+                const busvoltage = await sensor.getBusVoltage_V();
+                console.log("Bus voltage (V): " + busvoltage);
+                const shuntvoltage = await sensor.getShuntVoltage_mV();
+                console.log("Shunt voltage (mV): " + shuntvoltage);
+                const shuntcurrent = await sensor.getCurrent_mA();
+                console.log("Shunt Current (mA): " + shuntcurrent);
+
+                //console.log(`data = ${JSON.stringify(data, null, 2)}`);
+                //console.log(data)
+
+                // Change units to be compatible with SignalK
+                shuntcurrentA = shuntcurrent / 1000;
+                console.log("Load Current (A): " + shuntcurrentA);
+                loadvoltageV = busvoltage + (shuntvoltage / 1000);
+                console.log("Load voltage (V): " + loadvoltageV);
+
+                // create message
+                var delta = createDeltaMessage(loadvoltageV, shuntcurrentA)
+
+                // send data
+                app.handleMessage(plugin.id, delta)
+
+                //close sensor
+                //await sensor.close()
+            } catch (err) {
+                console.log(`ina219 read error: ${err}`);
+            }
+        }
+
+        //readina219();
+
+        timer = setInterval(readina219, options.rate * 1000);
     }
 
-    //readina219();
-    
-    timer = setInterval(readina219, options.rate * 1000);
-  }
-
-  plugin.stop = function () {
-    if(timer){
-      clearInterval(timer);
-      timeout = null;
+    plugin.stop = function() {
+        if (timer) {
+            clearInterval(timer);
+            timeout = null;
+        }
     }
-  }
 
-  return plugin
+    return plugin
 }
-
-
